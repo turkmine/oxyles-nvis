@@ -1,0 +1,113 @@
+/* ============================================================
+   main.css — композиция страницы, адаптив, доступность
+   Идентичность (темы, манга-фон, компоненты) живёт в manga.css,
+   специфика продукта — в product.css
+   ============================================================ */
+
+/* ---------- Композиция героя ---------- */
+.hero {
+  position: relative;
+  z-index: 1;
+  max-width: 100%;
+}
+
+.hero__name { animation: rise-name .7s var(--ease) both; }
+.hero__role { animation: rise .7s .06s var(--ease) both; }
+.bubble     { animation: rise .7s .12s var(--ease) both; }
+.hero__lead { animation: rise .7s .18s var(--ease) both; }
+.dl         { animation: rise .7s .26s var(--ease) both; }
+.hero__cta  { animation: rise .7s .34s var(--ease) both; }
+.socials    { animation: rise .7s .4s  var(--ease) both; }
+.mock       { animation: rise .7s .32s var(--ease) both; }
+
+@keyframes rise {
+  from { opacity: 0; transform: translateY(18px); }
+  to   { opacity: 1; transform: none; }
+}
+.hero__name { animation-name: rise-name; }
+@keyframes rise-name {
+  from { opacity: 0; transform: skewX(-7deg) translateY(18px); }
+  to   { opacity: 1; transform: skewX(-7deg); }
+}
+
+/* ---------- Сетка «профильных» блоков ---------- */
+.panel--contact .socials--lg .soc { flex: 1 1 250px; max-width: 340px; }
+
+/* Боковая рамка-акцент у карточек — по очереди, как кадры */
+.card--win:nth-child(2n) { border-top-width: 6px; }
+.card--win:nth-child(3n) { border-right-width: 6px; }
+.card--win:nth-child(4n) { border-bottom-width: 6px; }
+
+/* ---------- Адаптив ---------- */
+@media (max-width: 680px) {
+  :root { --bw: 1.5px; --bw-heavy: 3px; --speed-opacity: .05; }
+
+  html { scroll-padding-top: 78px; }
+  .panel { scroll-margin-top: 78px; }
+
+  .panel__gutter { display: none; }
+  .sfx--1, .sfx--3 { display: none; }
+  .sfx--2 { font-size: 2.6rem; opacity: .09; }
+
+  .hero__role { font-size: .74rem; letter-spacing: .12em; }
+
+  .chip { font-size: .72rem; padding: .26rem .58rem; }
+  .soc { flex: 1 1 100%; }
+  .soc__go { opacity: 1; transform: none; }
+}
+
+/* Очень узкие экраны */
+@media (max-width: 380px) {
+  .hero__chips { gap: .4rem; }
+  .dl__meta { gap: .4rem; }
+  .btn, .dl__btn { width: 100%; justify-content: center; }
+}
+
+/* Крупные экраны — не растягиваем текст в бесконечную строку */
+@media (min-width: 1600px) {
+  :root { --wrap: 1320px; }
+}
+
+/* ---------- Доступность ---------- */
+
+/* Видимый фокус у ссылок-иконок, но не «обводка квадратом» */
+.soc:focus-visible,
+.brand:focus-visible,
+.nav a:focus-visible {
+  outline-offset: 4px;
+}
+
+/* Крупные области клика на сенсорных */
+@media (pointer: coarse) {
+  .ctrl, .btn, .totop, .dl__btn { min-height: 46px; }
+  .nav a { padding-block: .7rem; }
+}
+
+/* Пока не сработал JS — контент не должен остаться невидимым */
+.no-js .reveal { opacity: 1; transform: none; }
+.no-js .totop { display: none; }
+
+/* Уважаем системную настройку контраста */
+@media (prefers-contrast: more) {
+  :root { --line-soft: currentColor; --line-faint: currentColor; }
+  .panel, .card, .trait, .keys li, .scale { border-width: 3px; }
+  .bg__speed, .bg__tone { display: none; }
+}
+
+/* Читаемость текста на любой теме */
+:root[data-theme="ink"]  { --paper-3: #1b1b1f; }
+:root[data-theme="paper"] { --paper-3: #e0dcd1; }
+
+/* ---------- Печать: ссылки раскрываются ---------- */
+@media print {
+  a[href^="http"]::after {
+    content: " (" attr(href) ")";
+    font-size: .72em;
+    color: #555;
+    word-break: break-all;
+  }
+  .soc, .btn { box-shadow: none; }
+  .reveal { opacity: 1 !important; transform: none !important; }
+  /* Макет окна на бумаге только шумит — убираем */
+  .mock { display: none; }
+}

@@ -1,0 +1,44 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" width="1200" height="630" role="img" aria-label="Nvis by Oxyles — регулировка гаммы экрана в Windows">
+  <defs>
+    <pattern id="tone" width="6" height="6" patternUnits="userSpaceOnUse">
+      <circle cx="1" cy="1" r="1" fill="#f4f4f2" fill-opacity=".16"/>
+    </pattern>
+    <pattern id="hatch" width="12" height="12" patternUnits="userSpaceOnUse" patternTransform="rotate(-45)">
+      <line x1="0" y1="0" x2="0" y2="12" stroke="#f4f4f2" stroke-opacity=".1" stroke-width="1.4"/>
+    </pattern>
+  </defs>
+
+  <rect width="1200" height="630" fill="#0b0b0c"/>
+  <rect width="1200" height="630" fill="url(#tone)"/>
+  <rect x="760" y="0" width="440" height="630" fill="url(#hatch)"/>
+
+  <!-- лучи из правого верхнего угла, как линии скорости -->
+  <g stroke="#f4f4f2" stroke-opacity=".09" stroke-width="2">
+    <path d="M1200 0 420 630M1200 0 560 630M1200 0 700 630M1200 0 840 630M1200 0 980 630M1200 0 1120 630"/>
+  </g>
+
+  <rect x="56" y="56" width="1088" height="518" fill="none" stroke="#f4f4f2" stroke-width="4"/>
+
+  <text x="104" y="176" fill="#f4f4f2" font-family="Arial Black, Impact, sans-serif"
+        font-size="42" letter-spacing="4">ГЛАВА 00 / ПРОЛОГ</text>
+
+  <text x="104" y="344" fill="#f4f4f2" font-family="Arial Black, Impact, sans-serif"
+        font-size="168" letter-spacing="-6">NVIS</text>
+
+  <text x="112" y="396" fill="#a3a39d" font-family="Segoe UI, system-ui, sans-serif"
+        font-size="34">by Oxyles</text>
+
+  <rect x="104" y="424" width="440" height="6" fill="#f4f4f2"/>
+
+  <text x="104" y="490" fill="#d6d6d2" font-family="Segoe UI, system-ui, sans-serif"
+        font-size="38">Регулировка гаммы экрана в Windows</text>
+
+  <text x="104" y="534" fill="#9c9c98" font-family="Segoe UI, system-ui, sans-serif"
+        font-size="28">Гамма 1.00 — 2.80 · три хоткея · без рекламы и трекеров</text>
+
+  <!-- значок: кнопка питания -->
+  <g transform="translate(1010 300)" fill="none" stroke="#f4f4f2" stroke-width="7" stroke-linecap="round">
+    <path d="M0 -44v52"/>
+    <path d="M-30 -18a42 42 0 1 0 60 0"/>
+  </g>
+</svg>

@@ -1,0 +1,99 @@
+/* ============================================================
+   404.css — оформление страницы «кадр не найден»
+   Отдельным файлом, потому что style-src 'self' не пускает
+   инлайновые <style> и style="".
+   ============================================================ */
+
+.page-404 {
+  display: flex;
+  flex-direction: column;
+  min-height: 100svh;
+}
+
+/* ---------- Центральный блок ---------- */
+.nf {
+  position: relative;
+  z-index: 1;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  width: min(100% - 2rem, 42rem);
+  margin-inline: auto;
+  padding: 4rem 0;
+  text-align: center;
+}
+
+/* ---------- Цифра 404 ---------- */
+.nf__code {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: clamp(5rem, 22vw, 13rem);
+  font-weight: 900;
+  line-height: .8;
+  letter-spacing: -.05em;
+  color: var(--ink);
+  transform: skewX(-7deg);
+  /* Обводка-тень, как у звуковых надписей в манге */
+  -webkit-text-stroke: 2px var(--ink-faint);
+  text-stroke: 2px var(--ink-faint);
+}
+:root[data-theme="paper"] .nf__code { -webkit-text-stroke-width: 1.5px; }
+
+/* ---------- Заголовок ---------- */
+.nf__title {
+  margin: .6rem 0 0;
+  font-size: clamp(1.3rem, 4vw, 2.2rem);
+  text-transform: uppercase;
+  letter-spacing: -.005em;
+}
+
+.nf__lead {
+  max-width: 34ch;
+  margin: 0;
+  color: var(--ink-2);
+}
+
+/* Звуковая надпись рядом с заголовком */
+.nf__sfx {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: clamp(1.4rem, 5vw, 2.6rem);
+  font-style: italic;
+  color: transparent;
+  -webkit-text-stroke: 1.5px var(--line);
+  text-stroke: 1.5px var(--line);
+  opacity: .18;
+  transform: rotate(-8deg);
+  user-select: none;
+}
+
+.nf .btn { margin-top: 1rem; }
+
+/* На узких экранах отступ сверху меньше */
+@media (max-width: 480px) {
+  .nf { padding: 2.5rem 0; gap: .8rem; }
+  .nf__sfx { display: none; }
+}
+
+/* На низких окнах контент перестаёт помещаться — ужимаем вертикаль.
+   Ориентируемся на высоту, а не на ширину: ноутбук в узком окне
+   и телефон в альбомной ориентации — разные случаи. */
+@media (max-height: 780px) {
+  .nf { padding: 2rem 0; gap: .6rem; }
+  .nf__code { font-size: clamp(4rem, 16vw, 8rem); }
+  .nf__sfx { display: none; }
+}
+@media (max-height: 620px) {
+  .nf__code { font-size: clamp(3.4rem, 12vw, 6rem); }
+  .nf__title { font-size: clamp(1.1rem, 3vw, 1.5rem); }
+  .nf .btn { margin-top: .4rem; }
+}
+
+/* Подвал на 404 занимает лишнее место — прячем его на совсем низких окнах,
+   чтобы контент точно не требовал прокрутки */
+@media (max-height: 520px) {
+  .page-404 .footer { display: none; }
+}
