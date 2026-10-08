@@ -1,0 +1,6 @@
+User-agent: *
+Allow: /
+Disallow: /css/
+Disallow: /js/
+
+Sitemap: https://nvis-site.turkmine3456.workers.dev/sitemap.xml

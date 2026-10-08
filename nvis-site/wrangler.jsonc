@@ -1,0 +1,45 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+
+  // Имя Worker'а. От него зависит технический адрес *.workers.dev
+  "name": "nvis-site",
+
+  "compatibility_date": "2026-10-08",
+
+  "assets": {
+    // ВАЖНО, ОТ ЧЕГО СЧИТАЕТСЯ ПУТЬ.
+    //
+    // Путь считается от папки, где лежит ЭТОТ файл, а не от того
+    // места, откуда запущен wrangler. Отсюда два рабочих варианта,
+    // выбери один и не меняй:
+    //
+    //   А) Файл лежит в КОРНЕ репозитория (рядом с папкой nvis-site)
+    //      → directory: "./nvis-site/"      ← сейчас так
+    //      → запускать из корня: npx wrangler deploy
+    //
+    //   Б) Файл лежит ВНУТРИ nvis-site/
+    //      → directory: "./"
+    //      → запускать из корня:
+    //        npx wrangler deploy --config nvis-site/wrangler.jsonc
+    //
+    // Ошибка «Could not detect a directory containing static files»
+    // означает ровно одно: путь в directory указывает не туда,
+    // где лежит index.html.
+
+    "directory": "./nvis-site/",
+
+    // Без этой строки Workers на несуществующий путь отдаст свою
+    // стандартную страницу 404, а не твою 404.html.
+    // С этой строкой — твою страницу с честным кодом 404.
+    "not_found_handling": "404-page",
+
+    // Отдавать /foo.html без слеша, /foo/index.html — со слешем.
+    // Это поведение по умолчанию, но задано явно, чтобы не зависеть
+    // от дефолта при смене версии wrangler.
+    "html_handling": "auto-trailing-slash"
+  },
+
+  "observability": {
+    "enabled": true
+  }
+}

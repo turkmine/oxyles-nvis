@@ -1,0 +1,20 @@
+{
+  "name": "Nvis by Oxyles — регулировка гаммы экрана в Windows",
+  "short_name": "Nvis",
+  "description": "Программа для Windows, которая регулирует гамму экрана от 1.00 до 2.80. Мгновенное применение, три горячих клавиши, тёмная и светлая тема.",
+  "lang": "ru",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#0b0b0c",
+  "theme_color": "#0b0b0c",
+  "icons": [
+    {
+      "src": "/assets/img/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
