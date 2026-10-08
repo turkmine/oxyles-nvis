@@ -1,153 +1,167 @@
 # Деплой страницы Nvis
 
-Сайт полностью статический: 19 файлов, ~109 КБ, ни одной зависимости и ни
-одного внешнего запроса. Подойдёт любой статический хостинг.
+Сайт полностью статический: 19 файлов на выкладку, ~109 КБ, ни одной зависимости
+и ни одного внешнего запроса.
 
-Отличие от био-сайта: здесь лежит **установщик на 57,4 МБ**, и это главный
-момент, из-за которого выбор хостинга ограничен.
+Главная особенность: **установщик весит 57,4 МБ, а Cloudflare Workers и Pages
+принимают максимум 25 МиБ на файл**. Поэтому `.msi` лежит в GitHub Releases,
+а папка `downloads/` исключена из выкладки.
 
 ---
 
-## ⚠️ Сначала: где будет лежать установщик
+## Коротко: Cloudflare Workers (актуальная схема)
 
-| Хостинг | Лимит на один файл | Подходит |
-|---|---|---|
-| Свой сервер (nginx, Caddy) | нет | Да, из коробки |
-| Cloudflare Pages | **25 МиБ** | Нет |
-| Cloudflare Workers (static assets) | **25 МиБ** | Нет |
-| GitHub Pages | 100 МБ | Да, но неудобно: файл тянется на каждый деплой |
+Сайт в подпапке `nvis-site/`, установщик — в Releases.
 
-`Nvis-Setup-1.0.0.msi` — 57,4 МБ. На Cloudflare он просто не загрузится:
-деплой упадёт с ошибкой про размер файла.
+**1. Конфиг в корне репозитория.** `wrangler.jsonc` кладётся рядом с папкой
+`nvis-site/`, а не внутрь неё — wrangler ищет конфиг в рабочей директории.
 
-### Вариант А — сайт на своём сервере
-
-Файл уже лежит в `downloads/`, `deploy/nginx.conf` умеет его отдавать.
-Ничего менять не нужно, кроме `server_name` и путей к сертификату.
-
-### Вариант Б — сайт на Cloudflare (R2)
-
-1. Создай бакет R2 в дашборде Cloudflare.
-2. Загрузи в него `Nvis-Setup-1.0.0.msi` (через консоль или `wrangler r2 object put`).
-3. Впиши адрес в `js/config.js`:
-
-```js
-downloadUrl: 'https://files.твой-бакет.r2.cloudflarestorage.com/Nvis-Setup-1.0.0.msi',
+```jsonc
+{
+  "name": "nvis-site",
+  "compatibility_date": "2026-10-08",
+  "assets": {
+    "directory": "./nvis-site/",
+    "not_found_handling": "404-page",
+    "html_handling": "auto-trailing-slash"
+  }
+}
 ```
 
-Либо сделай публичный домен на бакете (Settings → Public access → Custom
-domain) — тогда адрес будет короче и без токена.
+**2. `.assetsignore` — внутри `nvis-site/`**, рядом с `index.html`. Так требует
+платформа: файл ищется в корне папки со статикой. Уже настроен: выпускает 19
+нужных файлов, не выпускает `README.md`, `deploy/`, `wrangler.jsonc` и
+`downloads/`.
 
-4. Добавь `/downloads/` в `.assetsignore`, иначе Cloudflare попытается
-   залить лишние 57 МБ и упадёт.
-5. Продублируй адрес в `index.html` — по нему кнопка сработает при
-   выключенном JS.
+**3. Команда сборки** в настройках Workers Builds:
 
-> R2 отдаёт файлы без лимита на размер и с поддержкой `Range`, поэтому
-> работает докачка. Бесплатный тариф: 10 ГБ хранилища, этого хватит
-> на десятки версий установщика.
-
-> Имя файла при скачивании задаёт `Content-Disposition`. Для своего
-> сервера это уже сделано в `deploy/nginx.conf`. Для R2 поставь
-> `Content-Disposition: attachment; filename="Nvis-Setup-1.0.0.msi"` в
-> настройках бакета — иначе откроется загрузка как «документ», и
-> браузер подставит имя из ссылки. Атрибут `download` на ссылке
-> работает только для своего домена, на внешний он игнорируется.
-
-### Вариант В — GitHub Releases
-
-1. `git tag v1.0.0 && git push --tags`
-2. На GitHub: **Releases → Create a new release**, перетащи `.msi` в поле
-   «Attach files».
-3. Скопируй адрес `.../releases/download/v1.0.0/Nvis-Setup-1.0.0.msi` в
-   `config.js → product.downloadUrl`.
-
-Плюс: показывается число скачиваний и список версий. Минус: файл живёт
-на стороне и адрес ведёт на чужой домен.
-
----
-
-## Коротко: Cloudflare Workers
-
-```bash
-cd nvis-site
-npx wrangler login
+```
 npx wrangler deploy
 ```
 
-Адрес будет `https://nvis-site.<твой-поддомен>.workers.dev`. Перед деплоем
-убедись, что `/downloads/` добавлен в `.assetsignore` (см. вариант Б),
-иначе деплой провалится на размере файла.
+Альтернатива: если конфиг остаётся внутри `nvis-site/`, поставь
+`directory: "./"` и укажи путь явно —
 
-`wrangler.jsonc` уже настроен: папка `./`, `not_found_handling: 404-page`
-(иначе Cloudflare отдаст свою 404 вместо твоей), `html_handling:
-auto-trailing-slash`.
+```
+npx wrangler deploy --config nvis-site/wrangler.jsonc
+```
 
-Файл `.assetsignore` вычитывается только Workers, поэтому лежит в корне
-проекта. `deploy/_headers` — копия на случай, если деплой идёт из `deploy/`.
+**4. Установщик — в Releases.**
+
+```bash
+git tag v1.0.0
+git push origin v1.0.0
+```
+
+На GitHub: **Releases → Create a new release** → выбрать тег `v1.0.0` →
+перетащить `Nvis-Setup-1.0.0.msi` в «Attach files» → **Publish**.
+
+Готовый адрес вставить в двух местах:
+
+- `js/config.js` → `product.downloadUrl`
+- `index.html` → `href` у `.dl__btn` и `downloadUrl` в JSON-LD
+
+### Проверка до деплоя
+
+```bash
+npx wrangler deploy --dry-run
+```
+
+Ожидается `Read N files from the assets directory .../nvis-site`.
+Если снова `Could not detect a directory containing static files` — путь
+в `directory` не указывает туда, где лежит `index.html`.
 
 ---
 
-## Коротко: свой сервер
+## Частые ошибки
+
+| Ошибка | Причина | Что делать |
+|---|---|---|
+| `Could not detect a directory containing static files` | `directory` указывает не в папку с `index.html` | Поставить `"./nvis-site/"` (конфиг в корне) или `"./"` (конфиг внутри папки) |
+| `Asset is too large` / ошибка размера | В папке статики лежит `.msi` на 57 МБ | Проверить, что `/downloads/` есть в `.assetsignore` |
+| Деплой прошёл, кнопка отдаёт 404 | Адрес установщика не задан или ведёт в никуда | Создать релиз на GitHub и вписать `product.downloadUrl` |
+| `_headers` не применился | Файл лежит в подпапке, а не в корне репозитория | Перенести `_headers` в корень репозитория |
+
+> Про `_headers`: Cloudflare читает его **из корня выходной директории**.
+> Если хочешь оставить конфиг внутри `nvis-site/`, копия лежит в
+> `nvis-site/deploy/_headers` — но её тоже нужно положить в корень.
+
+---
+
+## Вариант: свой сервер (nginx)
+
+Установщик остаётся локально, `.assetsignore` не нужен.
 
 ```bash
-# 1. Залить на сервер
 scp -r nvis-site user@server:/var/www/nvis-site
 
-# 2. Конфиг
 cp nvis-site/deploy/nginx.conf /etc/nginx/sites-available/nvis
 ln -s /etc/nginx/sites-available/nvis /etc/nginx/sites-enabled/nvis
 
-# 3. Перед включением поправить:
-#    server_name       — твой домен
-#    root              — путь к папке
-#    ssl_certificate   — пути к сертификату
+# Перед включением поправить:
+#   server_name     — твой домен
+#   root            — путь к папке
+#   ssl_certificate — пути к сертификату
+# И удали из .assetsignore строку /downloads/, иначе nginx-конфиг
+# будет отдавать 404 на установщик. В этом же случае удали
+# product.downloadUrl из js/config.js, чтобы кнопка вела на
+# локальный файл.
 
-# 4. Проверить и применить
 nginx -t && systemctl reload nginx
 ```
 
-Отсечь лишнее наружу — `.htaccess`-аналог для nginx в самой папке не нужен,
-`location ~ /\.(?!well-known) { deny all; }` уже есть в конфиге.
+`deploy/nginx.conf` уже умеет отдавать `.msi` с
+`Content-Type: application/x-msi` и `Content-Disposition: attachment`.
+
+---
+
+## Вариант: Cloudflare R2 вместо GitHub
+
+Если не хочется, чтобы файл лежал на стороне GitHub:
+
+1. Создать бакет R2 в дашборде Cloudflare.
+2. Загрузить `Nvis-Setup-1.0.0.msi`.
+3. Вписать адрес в `product.downloadUrl` и `href` в `index.html`.
+
+R2 отдаёт файлы без лимита на размер и с поддержкой `Range`, поэтому работает
+докачка. Бесплатного тарифа (10 ГБ) хватит на десятки версий.
+
+Имя файла при скачивании задаёт `Content-Disposition` — для R2 поставь
+`Content-Disposition: attachment; filename="Nvis-Setup-1.0.0.msi"` в настройках
+бакета.
 
 ---
 
 ## Заголовки
 
-Готовые конфиги лежат в `deploy/` и в корне (`_headers`):
+Готовые конфиги: `deploy/nginx.conf` и `deploy/_headers` (то же для
+Cloudflare Pages / Netlify).
 
-- `deploy/nginx.conf` — серверный блок целиком: TLS, редирект, заголовки,
-  кэш, gzip и отдельный блок отдачи `.msi` с `Content-Disposition: attachment`
-- `deploy/_headers` — то же для Cloudflare Pages / Netlify
+CSP отдаётся заголовками, а не через `<meta http-equiv>`: в `meta` не работает
+`frame-ancestors`, и браузер применяет `meta`-CSP к служебным запросам вроде
+`robots.txt`, из-за чего часть аудиторов его не читает.
 
-CSP отдаётся заголовками, а не через `<meta http-equiv>`: в `meta` не
-работает `frame-ancestors`, и браузер применяет `meta`-CSP к служебным
-запросам вроде `robots.txt`, из-за чего часть аудиторов его не читает.
+Кэш: `css/` и `js/` — неделя, `assets/` — неделя, `index.html` — `no-cache`.
 
-Кэш: `css/` и `js/` — неделя (в nginx-конфиге год с `immutable`), `assets/` —
-неделя, `downloads/` — неделя, `index.html` — `no-cache`.
-
-> Если будешь менять `css`/`js` без смены имени файла, браузер может
-> долго показывать старую версию. Тогда убери `immutable` из соответствующей
-> секции, либо добавь к имени файла хеш.
+> Если будешь менять `css`/`js` без смены имени файла, браузер может долго
+> показывать старую версию. Тогда убери `immutable` из секции кэша
+> в `deploy/nginx.conf` либо добавь к имени файла хеш.
 
 ---
 
 ## Проверка перед выкладкой
 
 ```bash
-# Локально
 cd nvis-site
 python -m http.server 8000
 ```
 
-Открыть `http://localhost:8000` и проверить:
-
-- [ ] Кнопка скачивает файл, размер совпадает с `downloads/`
+- [ ] Кнопка скачивает установщик
 - [ ] Переключатели темы и эффектов работают, состояние переживает перезагрузку
 - [ ] Обе темы читаемы, контраст текста ≥ 4.5:1
 - [ ] Все ссылки в шапке ведут на существующие разделы
 - [ ] На телефоне одна колонка, кнопка на всю ширину
+- [ ] Нигде нет наезжающих друг на друга блоков
 - [ ] `/robots.txt` и `/sitemap.xml` отдаются с кодом 200
 - [ ] В консоли браузера пусто
 
